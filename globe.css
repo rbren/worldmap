@@ -9,6 +9,8 @@ html, body {
   height: 100%;
   display: flex;
   flex-wrap: wrap;
+  padding: 15px;
+  padding-top: 15px;
 }
 
 .section {
@@ -21,7 +23,23 @@ html, body {
   cursor: move;
 }
 
-#current {
+#details {
   color: white;
-  font-family: sans-serif;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.story {
+  margin-bottom: 30px;
+}
+
+.story p {
+  margin-top: 4px;
+  margin-bottom: 0px;
+}
+.story a {
+  color: #fff;
+}
+.story .time {
+  display: block;
+  font-size: 10px;
 }

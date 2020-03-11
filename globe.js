@@ -5,7 +5,7 @@
 //
 console.log('load');
 // ms to wait after dragging before auto-rotating
-var rotationDelay = 3000
+var rotationDelay = -1
 // scale of the globe (not the canvas element)
 var scaleFactor = .9
 // autorotation speed
@@ -17,28 +17,43 @@ var colorWater = '#fff'
 var colorLand = '#111'
 var colorGraticule = '#ccc'
 var colorCountry = '#a00'
+var colorCountryFixed = '#0a0'
 
 
 //
 // Handler
 //
 
-function enter(country) {
+function enter(thing) {
+  if (!thing) return;
   var country = countryList.find(function(c) {
-    return c.id === country.id
+    return parseInt(c.id) === parseInt(thing.id);
   })
-  current.text(country && country.name || '')
-}
-
-function leave(country) {
-  current.text('')
+  countryName.text(country && country.name || '')
+  var storiesElem = $("#stories");
+  storiesElem.html("");
+  if (!country) return;
+  var stories = storiesByCountry[country.id] || [];
+  stories.sort((s1, s2) => {
+    return new Date(s2.pubDate).getTime() - new Date(s1.pubDate).getTime();
+  })
+  stories.forEach(story => {
+    const time = moment(story.pubDate).fromNow();
+    storiesElem.append(`
+      <div class="story">
+        <a href="${story.link}">${story.title}</a>
+        <p class="time">${time}</p>
+        <p class="snippet">${story.contentSnippet}</p>
+      </div>
+    `);
+  })
 }
 
 //
 // Variables
 //
 
-var current = d3.select('#current')
+var countryName = d3.select('#countryName')
 var canvas = d3.select('#globe')
 var context = canvas.node().getContext('2d')
 var water = {type: 'Sphere'}
@@ -54,7 +69,7 @@ var width, height
 var land, countries
 var countryList
 var autorotate, now, diff, roation
-var currentCountry
+var currentCountry, currentCountryFixed
 
 //
 // Functions
@@ -103,6 +118,7 @@ function dragged() {
 }
 
 function dragended() {
+  if (rotationDelay === -1) return
   startRotation(rotationDelay)
 }
 
@@ -111,8 +127,11 @@ function render() {
   fill(water, colorWater)
   stroke(graticule, colorGraticule)
   fill(land, colorLand)
-  if (currentCountry) {
+  if (currentCountry && currentCountry !== currentCountryFixed) {
     fill(currentCountry, colorCountry)
+  }
+  if (currentCountryFixed) {
+    fill(currentCountryFixed, colorCountryFixed)
   }
 }
 
@@ -170,11 +189,24 @@ function polygonContains(polygon, point) {
   return inside
 }
 
-function mousemove() {
-  var c = getCountry(this)
+function onClick(e) {
+  setCountryByMouse(this);
+  currentCountryFixed = currentCountry;
+  enter(currentCountryFixed)
+  render()
+}
+
+function onMove() {
+  setCountryByMouse(this);
+  if (!currentCountryFixed) {
+    enter(currentCountry);
+  }
+}
+
+function setCountryByMouse(el) {
+  var c = getCountry(el)
   if (!c) {
     if (currentCountry) {
-      leave(currentCountry)
       currentCountry = undefined
       render()
     }
@@ -185,7 +217,6 @@ function mousemove() {
   }
   currentCountry = c
   render()
-  enter(c)
 }
 
 function getCountry(event) {
@@ -207,21 +238,23 @@ function getCountry(event) {
 setAngles()
 
 canvas
+  .on('click', onClick)
+  .on('mousemove', onMove)
   .call(d3.drag()
     .on('start', dragstarted)
     .on('drag', dragged)
     .on('end', dragended)
    )
-  .on('mousemove', mousemove)
 
 loadData(function(world, cList) {
   console.log('loaded');
   land = topojson.feature(world, world.objects.land)
   countries = topojson.feature(world, world.objects.countries)
   countryList = cList
-  
+
   window.addEventListener('resize', scale)
   scale()
   autorotate = d3.timer(rotate)
+  loadStories();
 })
 

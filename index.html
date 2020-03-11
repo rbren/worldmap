@@ -1,17 +1,22 @@
 <html>
 <head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="globe.css">
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
   <script src="https://d3js.org/d3-geo.v1.min.js"></script>
   <script src="https://d3js.org/topojson.v2.min.js"></script>
   <script src="https://bl.ocks.org/mbostock/raw/7ea1dde508cec6d2d95306f92642bc42/6aac691494f752142a67cc43c51a0fd09896dbd4/versor.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rss-parser@3.7.5/dist/rss-parser.min.js"></script>
 
-  <link rel="stylesheet" href="globe.css">
 </head>
 <body>
   <div class="container">
     <div class="section" id="details">
-      <h2 id="current">none</h2>
-      <div class="markdown"></div>
+      <h2 id="countryName">none</h2>
+      <div id="stories"></div>
     </div>
     <div class="section" id="globe-container">
       <canvas id="globe"></canvas>
@@ -19,5 +24,6 @@
   </div>
 
   <script src="globe.js"></script>
+  <script src="stories.js"></script>
 </body>
 </html>
