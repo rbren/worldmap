@@ -2,16 +2,26 @@ html, body {
   margin: 0;
   padding: 0;
   background: #555;
+  height: 100%;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.section {
+  height: 100%;
+  width: 50%;
+  display: inline-block;
 }
 
 #globe {
-  cursor: move;  
+  cursor: move;
 }
 
 #current {
-  position: absolute;
   color: white;
   font-family: sans-serif;
-  margin-left: 4%;
-  margin-top: 4%;
 }
