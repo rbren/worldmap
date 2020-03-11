@@ -7,7 +7,7 @@ console.log('load');
 // ms to wait after dragging before auto-rotating
 var rotationDelay = 3000
 // scale of the globe (not the canvas element)
-var scaleFactor = 0.9
+var scaleFactor = 5
 // autorotation speed
 var degPerSec = 6
 // start angles
