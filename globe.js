@@ -3,7 +3,7 @@
 //
 // Configuration
 //
-
+console.log('load');
 // ms to wait after dragging before auto-rotating
 var rotationDelay = 3000
 // scale of the globe (not the canvas element)
@@ -142,7 +142,9 @@ function rotate(elapsed) {
 }
 
 function loadData(cb) {
+  console.log('load');
   d3.json('https://unpkg.com/world-atlas@1/world/110m.json', function(error, world) {
+    console.log('got json', error, world);
     if (error) throw error
     d3.tsv('https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/world-country-names.tsv', function(error, countries) {
       if (error) throw error
@@ -212,6 +214,7 @@ canvas
   .on('mousemove', mousemove)
 
 loadData(function(world, cList) {
+  console.log('loaded');
   land = topojson.feature(world, world.objects.land)
   countries = topojson.feature(world, world.objects.countries)
   countryList = cList
