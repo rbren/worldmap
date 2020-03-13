@@ -17,17 +17,25 @@ function enter(thing) {
   var country = countryList.find(function(c) {
     return parseInt(c.id) === parseInt(thing.id);
   })
-  countryName.text(country && country.name || '')
+  let name = '';
+  if (country) {
+    name = country.name + " " + country.data.flag;
+  }
+  countryName.text(name);
   var storiesElem = $("#stories");
   storiesElem.html("");
   if (!country) return;
   var stories = storiesByCountry[country.id] || [];
   stories.forEach(story => {
-    const time = moment(story.pubDate).fromNow();
+    let time = moment(story.pubDate);
+    let timeStr = "just now";
+    if (time.isBefore(moment())) {
+      timeStr = time.fromNow();
+    }
     storiesElem.append(`
       <div class="story">
         <a href="${story.link}">${story.title}</a>
-        <p class="time">${time}</p>
+        <p class="time">${timeStr}</p>
         <p class="snippet">${story.contentSnippet}</p>
       </div>
     `);
