@@ -29,6 +29,9 @@ function loadStories() {
     c.lowerName = synonyms[c.lowerName] || c.lowerName;
   });
   let parser = new RSSParser();
+  let prom = Promise.resolve();
+  let total = feeds.length;
+  let done = 0;
   feeds.forEach(name => {
     let cached = localStorage.getItem(name);
     if (cached) {
@@ -41,12 +44,21 @@ function loadStories() {
         console.log('cache is stale for', name);
       }
     }
-    parser.parseURL(getFeed(name)).then(feed => {
+    prom = prom.then(_ => parser.parseURL(getFeed(name)).then(feed => {
       feed.retrieved = new Date();
       localStorage.setItem(name, JSON.stringify(feed));
       addStories(name, feed);
-    })
+    }));
   })
+  prom = prom.then(_ => {
+    for (let country in storiesByCountry) {
+      let stories = storiesByCountry[country];
+      stories.sort((s1, s2) => {
+        return new Date(s2.pubDate).getTime() - new Date(s1.pubDate).getTime();
+      })
+    }
+  });
+  return prom;
 }
 
 function addStories(name, feed) {

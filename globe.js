@@ -1,28 +1,14 @@
-
-
-//
-// Configuration
-//
-console.log('load');
-// ms to wait after dragging before auto-rotating
 var rotationDelay = -1
-// scale of the globe (not the canvas element)
 var scaleFactor = .9
-// autorotation speed
 var degPerSec = 6
-// start angles
 var angles = { x: -20, y: 40, z: 0}
-// colors
 var colorWater = '#fff'
 var colorLand = '#111'
 var colorGraticule = '#ccc'
 var colorCountry = '#a00'
 var colorCountryFixed = '#0a0'
 
-
-//
-// Handler
-//
+const maxStoryAgeForHighlight = 7;
 
 function enter(thing) {
   if (!thing) return;
@@ -34,9 +20,6 @@ function enter(thing) {
   storiesElem.html("");
   if (!country) return;
   var stories = storiesByCountry[country.id] || [];
-  stories.sort((s1, s2) => {
-    return new Date(s2.pubDate).getTime() - new Date(s1.pubDate).getTime();
-  })
   stories.forEach(story => {
     const time = moment(story.pubDate).fromNow();
     storiesElem.append(`
@@ -48,10 +31,6 @@ function enter(thing) {
     `);
   })
 }
-
-//
-// Variables
-//
 
 var countryName = d3.select('#countryName')
 var canvas = d3.select('#globe')
@@ -127,6 +106,19 @@ function render() {
   fill(water, colorWater)
   stroke(graticule, colorGraticule)
   fill(land, colorLand)
+  let now = moment();
+  countries.features.forEach(country => {
+    let stories = storiesByCountry[country.id];
+    if (!stories) return
+    let latest = moment(stories[0].pubDate);
+    let daysAgo = now.diff(latest, 'days');
+    let intensity = 1 - Math.min(maxStoryAgeForHighlight, daysAgo) / maxStoryAgeForHighlight;
+    let blueness = Math.round(intensity * 255).toString(16)
+    let shade = "#0000" + blueness;
+    if (daysAgo < 7) {
+      fill(country, shade);
+    }
+  })
   if (currentCountry && currentCountry !== currentCountryFixed) {
     fill(currentCountry, colorCountry)
   }
@@ -162,9 +154,7 @@ function rotate(elapsed) {
 }
 
 function loadData(cb) {
-  console.log('load');
   d3.json('https://unpkg.com/world-atlas@1/world/110m.json', function(error, world) {
-    console.log('got json', error, world);
     if (error) throw error
     d3.tsv('https://gist.githubusercontent.com/mbostock/4090846/raw/07e73f3c2d21558489604a0bc434b3a5cf41a867/world-country-names.tsv', function(error, countries) {
       if (error) throw error
@@ -247,14 +237,13 @@ canvas
    )
 
 loadData(function(world, cList) {
-  console.log('loaded');
   land = topojson.feature(world, world.objects.land)
   countries = topojson.feature(world, world.objects.countries)
   countryList = cList
-
-  window.addEventListener('resize', scale)
-  scale()
-  autorotate = d3.timer(rotate)
-  loadStories();
+  loadStories().then(_ => {
+    window.addEventListener('resize', scale)
+    scale()
+    autorotate = d3.timer(rotate)
+  });
 })
 
