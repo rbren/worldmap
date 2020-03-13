@@ -3,10 +3,11 @@ var scaleFactor = .9
 var degPerSec = 6
 var angles = { x: -20, y: 40, z: 0}
 var colorWater = '#fff'
-var colorLand = '#111'
+var colorLand = '#fff'
 var colorGraticule = '#ccc'
-var colorCountry = '#a00'
-var colorCountryFixed = '#0a0'
+var colorCountry = '#080'
+var colorCountryFixed = '#0c0'
+var colorCountryDefault = "#000"
 var paddingTop = 180;
 
 const maxStoryAgeForHighlight = 7;
@@ -108,15 +109,25 @@ function render() {
   fill(land, colorLand)
   let now = moment();
   countries.features.forEach(country => {
-    let stories = storiesByCountry[country.id];
-    if (!stories) return
-    let latest = moment(stories[0].pubDate);
-    let daysAgo = now.diff(latest, 'days');
-    let intensity = 1 - Math.min(maxStoryAgeForHighlight, daysAgo) / maxStoryAgeForHighlight;
-    let blueness = Math.round(intensity * 255).toString(16)
-    let shade = "#0000" + blueness;
-    if (daysAgo < 7) {
-      fill(country, shade);
+    let stories = storiesByCountry[parseInt(country.id).toString()];
+    let filled = false;
+    if (stories) {
+      let latest = moment(stories[0].pubDate);
+      let daysAgo = Math.max(0, now.diff(latest, 'days'));
+      let intensity = 1 - Math.min(maxStoryAgeForHighlight, daysAgo) / maxStoryAgeForHighlight;
+      let blueness = Math.round(intensity * 255).toString(16)
+      if (blueness.length < 2) {
+        blueness = "0" + blueness;
+      }
+      if (country.id === "4") console.log(blueness);
+      let shade = "#0000" + blueness;
+      if (daysAgo < 7) {
+        fill(country, shade);
+        filled = true;
+      }
+    }
+    if (!filled) {
+      fill(country, colorCountryDefault);
     }
   })
   if (currentCountry && currentCountry !== currentCountryFixed) {
@@ -142,7 +153,7 @@ function stroke(obj, color) {
 }
 
 function rotate(elapsed) {
-  now = d3.now()
+  let now = d3.now()
   diff = now - lastTime
   if (diff < elapsed) {
     rotation = projection.rotate()

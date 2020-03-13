@@ -14,20 +14,53 @@ const feeds = [
 ]
 
 const synonyms = {
-  'russian federation': 'russia',
+  'republic of the congo': ['congo'],
+  'china': ['hong kong'],
+  'united states': ['america', 'trump', 'hollywood'],
+  'india': ['bollywood'],
+  'côte d\'ivoire': ['ivory coast'],
+  'viet nam': ['vietnam'],
 }
 
 const storiesByCountry = {};
 
-function loadStories() {
+function initializeCountryData() {
   countryList.forEach(c => {
-    c.lowerName = c.name.toLowerCase();
-    let comma = c.lowerName.indexOf(',')
-    if (comma !== -1) {
-      c.lowerName = c.lowerName.substring(0, comma);
+    c.data = countryData.find(d => parseInt(d.ccn3) === parseInt(c.id));
+    if (!c.data) {
+      console.log("no data for ", c.id, c.name);
+      return
     }
-    c.lowerName = synonyms[c.lowerName] || c.lowerName;
   });
+  countryList = countryList.filter(c => c.data);
+  countryList.forEach(c => {
+    c.name = c.data.name.common;
+    let lowerName = c.name.toLowerCase();
+    let comma = lowerName.indexOf(',')
+    if (comma !== -1) {
+      lowerName = lowerName.substring(0, comma);
+    }
+    c.terms = [lowerName].concat(synonyms[lowerName] || []);
+    if (window.capitals[c.name]) {
+      c.terms.push(window.capitals[c.name].toLowerCase());
+    }
+    let leader = window.leaders.find(l => l.country.toLowerCase() === lowerName)
+    if (leader) {
+      ["government", "state"].forEach(type => {
+        if (!leader[type]) return
+        let lastName = leader[type].split(" ").pop();
+        c.terms.push(lastName.toLowerCase());
+      })
+    }
+    c.data = countryData.find(d => parseInt(d.ccn3) === parseInt(c.id));
+    c.terms = c.terms.concat(c.data.capital.map(cap => cap.toLowerCase()));
+    c.terms.push(c.data.demonym.toLowerCase());
+    c.terms.push(c.data.name.common.toLowerCase());
+  });
+}
+
+function loadStories() {
+  initializeCountryData();
   let parser = new RSSParser();
   let prom = Promise.resolve();
   let total = feeds.length;
@@ -62,22 +95,29 @@ function loadStories() {
 }
 
 function addStories(name, feed) {
+  let noCountry = 0;
   feed.items.forEach(item => {
-    const lowerTitle = item.title.toLowerCase();
     let country = null;
     if (name === 'britain') {
-      country = countryList.find(c => c.lowerName === 'united kingdom');
+      country = countryList.find(c => c.name === 'United Kingdom');
     } else if (name === 'united-states') {
-      country = countryList.find(c => c.lowerName === 'united states');
+      country = countryList.find(c => c.name === 'United States');
     } else if (name === 'china') {
-      country = countryList.find(c => c.lowerName === 'china');
+      country = countryList.find(c => c.name === 'China');
     } else {
-      country = countryList.find(c => lowerTitle.indexOf(c.lowerName) !== -1);
+      const lowerTitle = item.title.toLowerCase();
+      const lowerDesc = item.contentSnippet.toLowerCase();
+      country = countryList.find(c => c.terms.find(t => lowerTitle.indexOf(t) !== -1))
+        || countryList.find(c => c.terms.find(t => lowerDesc.indexOf(t) !== -1))
     }
     if (country) {
       storiesByCountry[country.id] = storiesByCountry[country.id] || [];
       storiesByCountry[country.id].push(item);
+    } else {
+      console.log("no country match:", item.title);
+      noCountry++;
     }
   })
+  console.log(name, noCountry, "items with no country out of", feed.items.length);
 }
 
