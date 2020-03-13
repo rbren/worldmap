@@ -3,6 +3,7 @@ html, body {
   padding: 0;
   background: #555;
   height: 100%;
+  font-family: 'Roboto Mono', monospace;
 }
 
 .container {
@@ -19,13 +20,16 @@ html, body {
   display: inline-block;
 }
 
+#globe-container {
+  height: 100%;
+}
+
 #globe {
   cursor: move;
 }
 
 #details {
   color: white;
-  font-family: 'Roboto Mono', monospace;
 }
 
 .story {

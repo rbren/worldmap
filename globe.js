@@ -7,6 +7,7 @@ var colorLand = '#111'
 var colorGraticule = '#ccc'
 var colorCountry = '#a00'
 var colorCountryFixed = '#0a0'
+var paddingTop = 180;
 
 const maxStoryAgeForHighlight = 7;
 
@@ -65,7 +66,7 @@ function setAngles() {
 function scale() {
   container = document.getElementById('globe-container');
   width = container.offsetWidth;
-  height = container.offsetHeight;
+  height = container.offsetHeight - paddingTop;
   canvas.attr('width', width).attr('height', height)
   projection
     .scale((scaleFactor * Math.min(width, height)) / 2)
@@ -85,7 +86,6 @@ function dragstarted() {
   v0 = versor.cartesian(projection.invert(d3.mouse(this)))
   r0 = projection.rotate()
   q0 = versor(r0)
-  stopRotation()
 }
 
 function dragged() {
@@ -183,6 +183,11 @@ function onClick(e) {
   setCountryByMouse(this);
   currentCountryFixed = currentCountry;
   enter(currentCountryFixed)
+  if (!currentCountryFixed) {
+    startRotation();
+  } else {
+    stopRotation()
+  }
   render()
 }
 
