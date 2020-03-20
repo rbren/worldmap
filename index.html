@@ -1,7 +1,7 @@
 <html>
 <head>
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="globe.css">
+  <link rel="stylesheet" href="styles.css">
 
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
@@ -13,6 +13,10 @@
 
 </head>
 <body>
+  <div class="loading">
+    Loading data...
+    <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+  </div>
   <div class="container">
     <div class="section" id="details">
       <h2 id="countryName">Select a Country</h2>

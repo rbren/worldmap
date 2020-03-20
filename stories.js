@@ -64,6 +64,7 @@ function initializeCountryData() {
 }
 
 function loadStories() {
+  $('.loading').show();
   initializeCountryData();
   let parser = new RSSParser();
   let prom = Promise.resolve();
@@ -94,6 +95,7 @@ function loadStories() {
         return new Date(s2.pubDate).getTime() - new Date(s1.pubDate).getTime();
       })
     }
+    $('.loading').hide();
   });
   return prom;
 }
