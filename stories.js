@@ -20,6 +20,7 @@ const synonyms = {
   'india': ['bollywood'],
   'côte d\'ivoire': ['ivory coast'],
   'viet nam': ['vietnam'],
+  'bolivia': ['evo morales'],
 }
 
 const storiesByCountry = {};
@@ -54,8 +55,11 @@ function initializeCountryData() {
     }
     c.data = countryData.find(d => parseInt(d.ccn3) === parseInt(c.id));
     c.terms = c.terms.concat(c.data.capital.map(cap => cap.toLowerCase()));
-    c.terms.push(c.data.demonym.toLowerCase());
+    const demonym = c.data.demonym.toLowerCase();
+    c.terms.push(demonym);
+    c.terms.push(demonym + "s");
     c.terms.push(c.data.name.common.toLowerCase());
+    c.terms = c.terms.map(t => getTokens([t]));
   });
 }
 
@@ -105,10 +109,8 @@ function addStories(name, feed) {
     } else if (name === 'china') {
       country = countryList.find(c => c.name === 'China');
     } else {
-      const lowerTitle = item.title.toLowerCase();
-      const lowerDesc = item.contentSnippet.toLowerCase();
-      country = countryList.find(c => c.terms.find(t => lowerTitle.indexOf(t) !== -1))
-        || countryList.find(c => c.terms.find(t => lowerDesc.indexOf(t) !== -1))
+      const tokens = getTokens([item.title, item.contentSnippet]);
+      country = countryList.find(c => matchTermList(tokens, c.terms));
     }
     if (country) {
       storiesByCountry[country.id] = storiesByCountry[country.id] || [];
@@ -121,3 +123,37 @@ function addStories(name, feed) {
   console.log(name, noCountry, "items with no country out of", feed.items.length);
 }
 
+function getTokens(strs) {
+  let tokens = [];
+  strs.forEach(str => {
+    tokens = tokens.concat(str.toLowerCase().split(' '));
+  });
+  tokens = tokens.map(t => {
+    t = t.replace(/'s$/, '');
+    t = t.replace(/’s$/, '');
+    t = t.replace(/\W+$/, '');
+    return t
+  })
+  return tokens
+}
+
+function matchTermList(tokens, termList) {
+  for (let term of termList) {
+    if (matchTokens(tokens, term)) return true
+  }
+  return false
+}
+
+function matchTokens(tokensToSearch, tokens) {
+  for (let i = 0; i <= tokensToSearch.length - tokens.length; ++i) {
+    let match = true;
+    for (let j = 0; j < tokens.length; ++j) {
+      if (tokens[j] !== tokensToSearch[i + j]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) return true;
+  }
+  return false;
+}
