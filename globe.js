@@ -212,8 +212,10 @@ function onClick(e) {
 
 function onMove() {
   setCountryByMouse(this);
-  if (!currentCountryFixed) {
+  if (currentCountry) {
     enter(currentCountry);
+  } else {
+    enter(currentCountryFixed);
   }
 }
 
