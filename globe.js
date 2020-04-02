@@ -127,7 +127,6 @@ function render() {
       if (blueness.length < 2) {
         blueness = "0" + blueness;
       }
-      if (country.id === "4") console.log(blueness);
       let shade = "#0000" + blueness;
       if (daysAgo < 7) {
         fill(country, shade);
@@ -266,10 +265,11 @@ loadData(function(world, cList) {
   land = topojson.feature(world, world.objects.land)
   countries = topojson.feature(world, world.objects.countries)
   countryList = cList
+  window.addEventListener('resize', scale)
+  scale()
+  autorotate = d3.timer(rotate)
   loadStories().then(_ => {
-    window.addEventListener('resize', scale)
-    scale()
-    autorotate = d3.timer(rotate)
+    console.log("Everything loaded")
   });
 })
 
